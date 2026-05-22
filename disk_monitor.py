@@ -1,0 +1,1 @@
+#Make the code OOP. We will use main.py as main controler and get data form the supporting files.
