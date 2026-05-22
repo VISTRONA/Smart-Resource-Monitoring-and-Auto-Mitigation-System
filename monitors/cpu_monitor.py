@@ -1,5 +1,4 @@
 #Also start documentation
-
 import psutil
 from datetime import datetime
 import json
@@ -42,35 +41,35 @@ class CPUMonitor:
 
 
 
-def get_per_core_usage():
-    pass
-
-def per_process():
-    process_list = []
-    for process in psutil.process_iter(['pid', 'name', 'cpu_percent']):
-        if process.info['cpu_percent'] > 5:
-
-            process_list.append(process.info)
-
-    return process_list
-
-
-def alerts(error_det):  #Add args for data what is more or fucked
-    if error_det == "HIGH_USE":
-        print("HIGH CPU USEAGE")
-
+# def get_per_core_usage():
+#     pass
+#
+# def per_process():
+#     process_list = []
+#     for process in psutil.process_iter(['pid', 'name', 'cpu_percent']):
+#         if process.info['cpu_percent'] > 5:
+#
+#             process_list.append(process.info)
+#
+#     return process_list
+#
+#
+# def alerts(error_det):  #Add args for data what is more or fucked
+#     if error_det == "HIGH_USE":
+#         print("HIGH CPU USEAGE")
+#
+# # while True:
+# #     print( get_cpu_useage())
+#
+#
 # while True:
-#     print( get_cpu_useage())
-
-
-while True:
-    data = {
-        "timestamp": timestamp,
-        "cpu_usage": get_cpu_useage(),
-        "processes": [per_process()]
-    }
-    with open('../storage test files/cpu_monitor.json', 'a') as outfile:
-        outfile.write(json.dumps(data)+"\n")
-    time.sleep(5)
+#     data = {
+#         "timestamp": timestamp,
+#         "cpu_usage": get_cpu_useage(),
+#         "processes": [per_process()]
+#     }
+#     with open('../storage test files/cpu_monitor.json', 'a') as outfile:
+#         outfile.write(json.dumps(data)+"\n")
+#     time.sleep(5)
 
 
