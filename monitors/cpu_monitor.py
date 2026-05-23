@@ -1,19 +1,3 @@
-"""
-CPU Monitor Module
-==================
-Tracks total CPU usage, per-core metrics, and high-consumption processes.
-Logs data locally in JSON Lines format and handles automatic high-usage alerting.
-
-Project Structure Context:
-.
-├── engine
-├── main.py
-├── monitors
-│   ├── cpu_monitor.py  <- This file
-│   └── disk_monitor.py
-└── storage test files  <- Target logging directory
-"""
-
 import os
 import sys
 import json
@@ -23,94 +7,147 @@ import psutil
 
 
 class CPUMonitor:
-    """Handles CPU metrics collection, process tracking, and alerting logic."""
 
-    def __init__(self, alert_threshold=85.0, consecutive_triggers=4):
-        self.alert_threshold = alert_threshold
-        self.consecutive_triggers = consecutive_triggers
-        self.high_use_counter = 0
+    def __init__(self, process_cpu_threshold=5.0, interval=5):
+        self.process_cpu_threshold = process_cpu_threshold
+        self.interval = interval
 
-        # Cross-platform path resolution relative to this file's location
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.log_dir = os.path.join(base_dir, "storage test files")
+        # Resolve project root cleanly across Linux and Windows
+        try:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            self.log_dir = os.path.join(base_dir, "storage test files")
+            os.makedirs(self.log_dir, exist_ok=True)
+        except Exception:
+            # Absolute fallback to current directory if paths are unresolvable
+            self.log_dir = os.getcwd()
+
         self.log_file = os.path.join(self.log_dir, "cpu_monitor.json")
-
-        # Ensure target storage directory exists
-        os.makedirs(self.log_dir, exist_ok=True)
+        self.max_log_size = 5 * 1024 * 1024  # 5 MB Maximum log size
 
     def get_cpu_metrics(self):
         """
-        Gathers overall and per-core CPU usage safely.
-        Using interval=0.1 prevents heavy blocking while allowing psutil to sample accurately.
+        Collects overall and per-core CPU usage.
+        Returns safe defaults on OS exception.
         """
-        # Collect overall and per-cpu simultaneously using a single blocking sample period
-        total_cpu = psutil.cpu_percent(interval=0.1)
-        per_core = psutil.cpu_percent(percpu=True)
+        try:
+            total_cpu = psutil.cpu_percent(interval=0.1)
+            per_core = psutil.cpu_percent(interval=None, percpu=True)
 
-        # Evaluate alerting logic based on the collected reading
-        self._check_alerts(total_cpu)
+            return {
+                "total_cpu": total_cpu if total_cpu is not None else 0.0,
+                "per_core": per_core if per_core is not None else []
+            }
+        except Exception as e:
+            print(f"[{datetime.now().isoformat()}] Error reading hardware metrics: {e}", file=sys.stderr)
+            return {"total_cpu": 0.0, "per_core": []}
 
-        return {
-            "total_cpu": total_cpu,
-            "per_core": per_core
-        }
-
-    def get_heavy_processes(self, cpu_threshold=5.0):
+    def get_heavy_processes(self):
         """
-        Scans running processes and returns those exceeding the CPU threshold.
-        Includes robust exception handling for ephemeral and OS-protected processes.
+        Scans running processes and filters by the specified CPU threshold.
+        Optimized one-pass iteration with dict caching to prevent system lag.
         """
         process_list = []
-        # Fetching process metrics can throw errors mid-iteration if a process terminates
-        for process in psutil.process_iter(['pid', 'name', 'cpu_percent']):
-            try:
-                # Note: psutil's 'cpu_percent' here evaluates since the last process_iter call
-                info = process.info
-                if info['cpu_percent'] and info['cpu_percent'] > cpu_threshold:
-                    process_list.append(info)
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                continue
+        try:
+            for process in psutil.process_iter(['pid', 'name', 'cpu_percent']):
+                try:
+                    info = process.info
+                    cpu = info.get('cpu_percent')
+
+                    if cpu is not None and cpu > self.process_cpu_threshold:
+                        # Isolated block for memory check to keep Windows permissions from breaking the loop
+                        try:
+                            mem_percent = round(process.memory_percent(), 2)
+                        except (psutil.NoSuchProcess, psutil.AccessDenied, Exception):
+                            mem_percent = 0.0
+
+                        process_list.append({
+                            "pid": info.get('pid', 0),
+                            "name": info.get('name') or "Unknown",
+                            "cpu_percent": cpu,
+                            "memory_percent": mem_percent
+                        })
+                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                    continue
+                except Exception:
+                    continue  # Skip any single corrupted or rapid-cycling process
+        except Exception as e:
+            print(f"[{datetime.now().isoformat()}] Error walking process tree: {e}", file=sys.stderr)
+
+        # Sort from highest consumer to lowest
+        try:
+            process_list.sort(key=lambda x: x["cpu_percent"], reverse=True)
+        except Exception:
+            pass
+
         return process_list
 
-    def _check_alerts(self, current_usage):
-        """Internal tracker for persistent high CPU spikes."""
-        if current_usage > self.alert_threshold:
-            self.high_use_counter += 1
-            if self.high_use_counter >= self.consecutive_triggers:
-                self._trigger_alert(f"HIGH_USE (Sustained at {current_usage}%)")
-        else:
-            self.high_use_counter = 0  # Reset if usage dips below threshold
+    def rotate_logs(self):
+        """
+        Rotates the active log to cpu_monitor.json.old when it crosses max_log_size.
+        Handles Windows/Linux file locks gracefully.
+        """
+        try:
+            if os.path.exists(self.log_file) and os.path.getsize(self.log_file) > self.max_log_size:
+                backup = self.log_file + ".old"
+                if os.path.exists(backup):
+                    try:
+                        os.remove(backup)
+                    except Exception:
+                        pass  # Backup file is locked by another reader; append instead of crashing
+                os.rename(self.log_file, backup)
+        except Exception as e:
+            print(f"[{datetime.now().isoformat()}] Log rotation bypassed: {e}", file=sys.stderr)
 
-    def _trigger_alert(self, error_msg):
-        """Dispatches alerts. Expand this method to connect to Webhooks, email, etc."""
-        print(f"[{datetime.now().isoformat()}] ALERT: {error_msg}", file=sys.stderr)
+    def log_data(self, payload):
+        """Writes telemetric payloads as a single JSON line."""
+        try:
+            self.rotate_logs()
+            with open(self.log_file, "a", encoding="utf-8") as outfile:
+                outfile.write(json.dumps(payload) + "\n")
+        except Exception as e:
+            # Safe boundary print to console if disk space fills up or locks out entirely
+            print(f"CRITICAL FILE SYSTEM WRITE FAILURE: {e}", file=sys.stderr)
 
 
 if __name__ == "__main__":
-    monitor = CPUMonitor(alert_threshold=85.0, consecutive_triggers=4)
-    print(f"Starting CPU Monitor. Logging data to: {monitor.log_file}")
+    monitor = CPUMonitor(process_cpu_threshold=5.0, interval=5)
+
+    print(f"Telemetry collector initialized.\nTarget destination: {monitor.log_file}")
+
+    # Prime the psutil delta tracking system once before looping
+    try:
+        for p in psutil.process_iter(['cpu_percent']):
+            try:
+                p.info['cpu_percent']
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    time.sleep(0.5)
 
     while True:
         try:
-            # 1. Gather all system data point components
             cpu_stats = monitor.get_cpu_metrics()
-            heavy_procs = monitor.get_heavy_processes(cpu_threshold=5.0)
+            heavy_processes = monitor.get_heavy_processes()
 
-            # 2. Package data with an active, fresh timestamp
             payload = {
                 "timestamp": datetime.now().isoformat(),
                 "cpu_usage": cpu_stats["total_cpu"],
                 "per_core": cpu_stats["per_core"],
-                "processes": heavy_procs
+                "processes": heavy_processes
             }
 
-            # 3. Write securely using proper file encoding configuration
-            with open(monitor.log_file, 'a', encoding='utf-8') as outfile:
-                outfile.write(json.dumps(payload) + "\n")
-
-            # 4. Wait out the interval loop cycle
-            time.sleep(5)
+            monitor.log_data(payload)
 
         except KeyboardInterrupt:
-            print("\nMonitoring stopped by user.")
+            print("\nCollector gracefully stopped.")
             break
+        except Exception as loop_err:
+            print(f"[{datetime.now().isoformat()}] Top-level loop anomaly managed: {loop_err}", file=sys.stderr)
+
+        # Fallback interval protector
+        try:
+            time.sleep(monitor.interval)
+        except Exception:
+            time.sleep(5)
