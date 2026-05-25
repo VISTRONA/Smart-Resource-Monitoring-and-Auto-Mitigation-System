@@ -1,1 +1,1 @@
-psutil
+# Dependencies (psutil, pygetwindow, etc.)
