@@ -1,1 +1,4 @@
-psutil
+#psutil is neede for linux and windows. It is a bundeled and built library so we dont need to manually make the modules to monitor/
+# before starting do "pip install -r requirements.txt" for both windows, Linux not sure how well it runs on MACOS as I dont have one to test on but it should work as 
+#well as both linux and MACOS are based on UNIX.
+psutil==5.9.8

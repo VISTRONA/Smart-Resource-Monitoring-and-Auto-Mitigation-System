@@ -1,3 +1,4 @@
 .idea
 .venv
-cpu_monitor.json
+/data/log.csv
+
