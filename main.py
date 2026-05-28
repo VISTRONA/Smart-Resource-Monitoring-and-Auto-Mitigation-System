@@ -14,6 +14,14 @@ from datetime import datetime
 
 from tkinter import *
 
+
+CpuThres = 50.0 #Set higher (80%) for actual use, This is for demo
+RamThres = 40.0 #Set higher (80%) for actual use, This is for demo
+
+LogFiles = os.path.join("data", "logs.csv")
+
+
+
 screen = Tk()
 screen.title("Smart Resource Monitor and Auto-Mitigation System")
 screen.geometry("800x600")
@@ -31,7 +39,7 @@ def log_data(): #Creates file for first time use
     if not os.path.exists(LogFiles):
         with open(LogFiles, mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["Timestamp", "App Name", "PID", "Action Taken", "System CPU Before", "System CPU After"])
+            writer.writerow(["Timestamp", "App Name", "PID", "Action Taken", "System CPU Before", "System CPU After","System RAM Before", "System RAM After"])
 
 
 
@@ -140,6 +148,7 @@ def engine(app,cpu,ram): #Difficult one
         print("Measuring improv in system resources after action...")
         time.sleep(2)  # 2 sec delay to allow system to stabilize after action
         new_cpu = psutil.cpu_percent(interval=0.5)
+        new_ram = psutil.virtual_memory().percent
 
         with open(LogFiles, mode='a', newline='') as file:
             writer = csv.writer(file)
@@ -150,7 +159,10 @@ def engine(app,cpu,ram): #Difficult one
             app['pid'],
             action_string,
             f"{cpu}%",
-            f"{new_cpu}%"
+            f"{new_cpu}%",
+            f"{ram}%",
+            f"{new_ram}%"
+
         ])
         print(f"Logged action to {LogFiles}")
 
@@ -178,4 +190,3 @@ if __name__ == "__main__":
         print("\n Exiting Program!")
     
     screen.mainloop()
-
