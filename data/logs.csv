@@ -1,2 +1,8 @@
 Timestamp,App Name,PID,Action Taken,System CPU Before,System CPU After
 2026-05-28 08:04:37,brave,5606,Terminated,6.5%,4.0%
+2026-05-29 01:53:52,brave,385765,Terminated,42.8%,11.5%,50.7%,46.9%
+2026-05-29 01:54:08,brave,384958,Suspended (SIGSTOP),17.8%,11.1%,49.1%,48.3%
+2026-05-29 01:54:19,spotify,365254,Lowered Priority (Linux Nice),17.9%,12.9%,48.4%,48.6%
+2026-05-29 01:54:26,spotify,365254,Suspended (SIGSTOP),17.1%,16.1%,48.6%,48.4%
+2026-05-29 01:54:30,spotify,365254,Terminated,25.0%,8.2%,48.4%,47.1%
+2026-05-29 01:54:35,brave,430613,Terminated,9.5%,7.1%,47.0%,45.6%
