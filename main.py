@@ -1,7 +1,7 @@
 #Step -1 Make Montior (With AI) (Done)
 #Step -2 Make engine to fix (with AI) (Done)
-#Step -3 Make UI (Useing Tkinter) (Self) (Work still in progress, will be added in next commit)
-#Step -4 Make it an executable file (Self) (Not sure if I will do this, but I will try to make it as user friendly as possible with a UI and all, so that it can be used without needing to run the script from command line)
+#Step -3 Make UI (Useing Tkinter) (Self) (Work in progress, will be added in next commit)
+#Step -4 Make it an executable file (Self) 
 
 import psutil
 
@@ -11,6 +11,12 @@ import sys
 import time
 import csv
 from datetime import datetime
+
+from tkinter import *
+
+screen = Tk()
+screen.title("Smart Resource Monitor and Auto-Mitigation System")
+screen.geometry("800x600")
 
 
 CpuThres = 50.0 #Set higher (80%) for actual use, This is for demo
@@ -54,7 +60,7 @@ def system_scanner():
             memory_percent = proc.info['memory_percent']
 
             #Edge case: System processes and this script itself.
-            if name in ["System", "Idle", "Registry","init"] or pid == os.getpid():
+            if name in ["System", "Idle", "System Idle Process", "Registry", "init"] or pid == os.getpid():
                 print(f"Skipping process: {name} (PID: {pid})")
                 continue
 
@@ -80,7 +86,7 @@ def system_scanner():
 
     return worst_app, cpu, ram
 
-def engine(app,cpu): #Difficult one
+def engine(app,cpu,ram): #Difficult one
     if not app:
         print("No steps to be taken yet")
         return
@@ -161,7 +167,7 @@ if __name__ == "__main__":
         while True:
             target_app, sysCpu, sysRam = system_scanner()
             if target_app:
-                engine(target_app, sysCpu)
+                engine(target_app, sysCpu,sysRam)
 
             print("\n"+ "-----------------")
             print("5 sec sleep")
@@ -170,4 +176,6 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("\n Exiting Program!")
+    
+    screen.mainloop()
 
