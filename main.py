@@ -1,7 +1,7 @@
-#Step -1 Make Montior (With AI)
-#Step -2 Make engine to fix (with AI)
-#Step -3 Make UI (Useing Tkinter) (Self)
-#Step -4 Make it an exxusitable file (Self)
+#Step -1 Make Montior (With AI) (Done)
+#Step -2 Make engine to fix (with AI) (Done)
+#Step -3 Make UI (Useing Tkinter) (Self) (Work still in progress, will be added in next commit)
+#Step -4 Make it an executable file (Self) (Not sure if I will do this, but I will try to make it as user friendly as possible with a UI and all, so that it can be used without needing to run the script from command line)
 
 import psutil
 
