@@ -105,3 +105,4 @@ Timestamp,App Name,PID,Action Taken,System CPU Before,System CPU After
 2026-05-28 11:24:02,brave,255289,Suspended (SIGSTOP),94.4%,41.2%
 2026-05-28 11:30:15,chrome,140220,Lowered Priority (Linux Nice),78.1%,52.5%
 ```
+---
