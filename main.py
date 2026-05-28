@@ -14,7 +14,7 @@ from datetime import datetime
 
 
 CpuThres = 50.0 #Set higher (80%) for actual use, This is for demo
-RamThres = 50.0 #Set higher (80%) for actual use, This is for demo
+RamThres = 40.0 #Set higher (80%) for actual use, This is for demo
 
 LogFiles = os.path.join("data", "logs.csv")
 
@@ -35,7 +35,7 @@ def system_scanner():
     
     print(f"CPU Usage: {cpu}% | RAM Usage: {ram}%")
 
-    if cpu < CpuThres or ram < RamThres:
+    if cpu < CpuThres and ram < RamThres:
         print("Safe!")
         return None, cpu, ram
     
@@ -66,26 +66,94 @@ def system_scanner():
             
             score = cpu_percent * 1.5 + memory_percent * 2.5
             
-            if sore > highest_score:
+            if score > highest_score:
                 highest_score = score
                 worst_app = {
                     "pid": pid,
                     "name": name,
-                    "cpu": round(app_cpu, 1),
-                    "ram": round(app_ram, 1),
+                    "cpu": round(cpu_percent, 1),
+                    "ram": round(memory_percent, 1),
                     "score": round(score, 2)
                 }
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue
 
-        return worst_app, cpu, ram
+    return worst_app, cpu, ram
 
-def engine(app,cpu):
+def engine(app,cpu): #Difficult one
+    if not app:
+        print("No steps to be taken yet")
+        return
     
-        
+
+    print(f"\n Existential process identified: {app['name']} (PID: {app['pid']}) with CPU: {app['cpu']}% and RAM: {app['ram']}% | Score: {app['score']}")
+
+    print("Optimization Strategy: 'Mr. Prsident: '")
+    print("1. [Optimize Priority] Lower application's priority (Linux Nice / Windows Set)")
+    print("2. [Suspend Process] Freeze the process completely (Linux SIGSTOP)")
+    print("3. [Terminate Process] Hard close the application entirely")
+    print("4. [Skip Action] Do nothing")
+
+    choice = input("Enter your choice (1-4): ").strip()
+    action_string = "Skipped"
+
+    try:
+        proc = psutil.Process(app['pid'])
+        if choice == '1':
+            if sys.platform == "win32":
+                import ctypes
+                handle = ctypes.windll.kernel32.OpenProcess(0x0100, False, app['pid'])
+                if handle:
+                    ctypes.windll.kernel32.SetProcessWorkingSetSize(handle, -1, -1) # BELOW_NORMAL_PRIORITY_CLASS
+                    ctypes.windll.kernel32.CloseHandle(handle)
+                    action_string = "Optimed Memory (Windows Trimming)"
+            else:
+                # Linux Nice priority adjustment (Values range from -20 to 19. 19 is lowest priority)
+                proc.nice(19) # Lower priority
+                action_string = "Lowered Priority (Linux Nice)"
+            print(f"Action taken: {action_string} to {app['name']} (PID: {app['pid']})")
+        elif choice == '2':
+            if sys.platform != "win32":
+                proc.suspend()  # Sends Linux SIGSTOP to freeze the app
+                action_string = "Suspended (SIGSTOP)"
+                print(f"Frozen {app['name']} successfully. Tabs/Windows remain open but paused.")
+            else:
+                print("Process suspension is optimized for Linux environments in this version.")
+                return
+            
+        elif choice == '3':
+            proc.terminate()  # Forcefully closes the app
+            action_string = "Terminated"
+            print(f"Terminated {app['name']} successfully. All tabs/windows will be closed.")
+        else:
+            print("Action canceled by user.")
+            return
+
+             # Log the action taken along with system CPU before and after the action
+          
+        print("Measuring improv in system resources after action...")
+        time.sleep(2)  # 2 sec delay to allow system to stabilize after action
+        new_cpu = psutil.cpu_percent(interval=0.5)
+
+        with open(LogFiles, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            # writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), app['name'], app['pid'], action_string, cpu, new_cpu])
+            writer.writerow([
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            app['name'],
+            app['pid'],
+            action_string,
+            f"{cpu}%",
+            f"{new_cpu}%"
+        ])
+        print(f"Logged action to {LogFiles}")
+
+
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        print("Process no longer exists. It may have been closed manually or by another system action.")
 
 if __name__ == "__main__":
-    log_data()
+    log_data()  
 
 
 
@@ -93,6 +161,13 @@ if __name__ == "__main__":
         while True:
             target_app, sysCpu, sysRam = system_scanner()
             if target_app:
-                egine(target_app, sysCpu)
-                
+                engine(target_app, sysCpu)
+
+            print("\n"+ "-----------------")
+            print("5 sec sleep")
+            print("-----------------")      
+            time.sleep(5)          
+
+    except KeyboardInterrupt:
+        print("\n Exiting Program!")
 
