@@ -1,8 +1,3 @@
-#Step -1 Make Montior (With AI) (Done)
-#Step -2 Make engine to fix (with AI) (Done)
-#Step -3 Make UI (Useing Tkinter) (Self) (Work in progress, will be added in next commit)
-#Step -4 Make it an executable file (Self) 
-
 import psutil
 
 import os
@@ -109,7 +104,7 @@ def engine(app,cpu,ram, choice): # Modified to take UI button choices asynchrono
 
     print(f"\n Existential process identified: {app['name']} (PID: {app['pid']}) with CPU: {app['cpu']}% and RAM: {app['ram']}% | Score: {app['score']}")
 
-    print("Optimization Strategy: 'Mr. Prsident: '")
+    print("Optimization Strategy: 'Mr. President: '")
     print("1. [Optimize Priority] Lower application's priority (Linux Nice / Windows Set)")
     print("2. [Suspend Process] Freeze the process completely (Linux SIGSTOP)")
     print("3. [Terminate Process] Hard close the application entirely")
@@ -220,7 +215,7 @@ if __name__ == "__main__":
     window.geometry("850x650")
     window.configure(bg="#141414")
 
-    # Banner Title
+    # Title
     tit = Label(window, text="Smart Resource Monitor and Auto-Mitigation System", font=("Arial", 16, "bold"), bg="#141414", fg="white")
     tit.pack(pady=15)
 
@@ -264,30 +259,26 @@ if __name__ == "__main__":
     controls_frame.pack(fill="x", padx=15, pady=15)
     controls_frame.columnconfigure((0, 1, 2, 3), weight=1)
 
-    # Operational Interactive Strategy Mapping Hooks
-    btn_opt = Button(controls_frame, text="OPTIMIZE ALLOC", font=("Arial", 10, "bold"), bg="#3498db", fg="white", height=2, command=lambda: engine(active_target, saved_cpu, saved_ram, 1))
+    #Buttons
+    btn_opt = Button(controls_frame, text="OPTIMIZE PROGRAM", font=("Arial", 10, "bold"), bg="#3498db", fg="white", height=2, command=lambda: engine(active_target, saved_cpu, saved_ram, 1))
     btn_opt.grid(row=0, column=0, padx=5, sticky="ew")
 
-    btn_susp = Button(controls_frame, text="FREEZE THREAD", font=("Arial", 10, "bold"), bg="#e67e22", fg="white", height=2, command=lambda: engine(active_target, saved_cpu, saved_ram, 2))
+    btn_susp = Button(controls_frame, text="FREEZE PROGRAM\n(UNIX system only)", font=("Arial", 10, "bold"), bg="#e67e22", fg="white", height=2, command=lambda: engine(active_target, saved_cpu, saved_ram, 2))
     btn_susp.grid(row=0, column=1, padx=5, sticky="ew")
 
-    btn_term = Button(controls_frame, text="PURGE TARGET", font=("Arial", 10, "bold"), bg="#e74c3c", fg="white", height=2, command=lambda: engine(active_target, saved_cpu, saved_ram, 3))
+    btn_term = Button(controls_frame, text="PURGE PROGRAM", font=("Arial", 10, "bold"), bg="#e74c3c", fg="white", height=2, command=lambda: engine(active_target, saved_cpu, saved_ram, 3))
     btn_term.grid(row=0, column=2, padx=5, sticky="ew")
 
     btn_skip = Button(controls_frame, text="BYPASS ALERT", font=("Arial", 10, "bold"), bg="#444444", fg="white", height=2, command=lambda: engine(active_target, saved_cpu, saved_ram, 4))
     btn_skip.grid(row=0, column=3, padx=5, sticky="ew")
 
-    btn_exit = Button(window, text="DISCONNECT SYSTEM", font=("Arial", 11, "bold"), bg="#222222", fg="#aaaaaa", height=2, command=window.destroy)
+    btn_exit = Button(window, text="DISCONNECT SYSTEM(EXIT)", font=("Arial", 11, "bold"), bg="#222222", fg="#aaaaaa", height=2, command=window.destroy)
     btn_exit.pack(fill="x", padx=20, pady=(0, 20))
 
     set_buttons_state("disabled")
 
-    # KICKSTART: Instruct Tkinter to boot up your infinite background evaluation loop automatically in 1 second!
+
     window.after(1000, continuous_loop)
 
-    # Hand program pipeline processing tracking over to Tkinter's native graphics engine loops
-<<<<<<< HEAD
+
     window.mainloop()
-=======
-    window.mainloop()
->>>>>>> 436121c60753cd03ad5becde98b31aa3555eff84
