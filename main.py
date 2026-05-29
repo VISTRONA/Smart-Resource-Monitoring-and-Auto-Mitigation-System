@@ -286,4 +286,8 @@ if __name__ == "__main__":
     window.after(1000, continuous_loop)
 
     # Hand program pipeline processing tracking over to Tkinter's native graphics engine loops
+<<<<<<< HEAD
     window.mainloop()
+=======
+    window.mainloop()
+>>>>>>> 436121c60753cd03ad5becde98b31aa3555eff84
