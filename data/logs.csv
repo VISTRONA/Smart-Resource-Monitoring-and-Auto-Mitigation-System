@@ -2,3 +2,14 @@ Timestamp,App Name,PID,Action Taken,System CPU Before,System CPU After
 2026-05-28 08:04:37,brave,5606,Terminated,6.5%,4.0%
 2026-05-29 00:20:59,brave,5349,Lowered Priority (Linux Nice),23.3%,8.0%,43.8%,43.4%
 2026-05-29 00:21:36,brave,5349,Suspended (SIGSTOP),9.6%,9.0%,43.2%,43.1%
+2026-05-31 03:15:53,code,55009,Terminated via Direct UI Grid Button,21.8%,18.1%,44.1%,44.2%
+2026-05-31 03:15:57,code,55933,Terminated via Direct UI Grid Button,21.8%,42.0%,44.1%,43.7%
+2026-05-31 03:16:10,code,70655,Terminated via Direct UI Grid Button,44.4%,54.7%,47.7%,49.6%
+2026-05-31 03:16:18,spotify,70981,Terminated via Direct UI Grid Button,40.4%,31.5%,49.8%,49.2%
+2026-05-31 03:16:25,spotify,70981,Terminated via Direct UI Grid Button,28.0%,25.6%,48.9%,49.1%
+2026-05-31 03:22:22,spotify,71016,Terminated via Direct UI Grid Button,24.7%,38.3%,45.8%,46.4%
+2026-05-31 03:22:56,spotify,71084,Terminated via Direct UI Grid Button,34.9%,29.6%,46.2%,44.6%
+2026-05-31 03:25:30,spotify,76964,Terminated via Direct UI Grid Button (1 process(es) killed),11.3%,34.6%,44.9%,43.6%
+2026-05-31 03:36:17,steam,11388,Terminated via Direct UI Grid Button (19 process(es) killed),45.9%,10.9%,53.7%,43.1%
+2026-05-31 03:36:42,steam,13158,Terminated via Direct UI Grid Button (16 process(es) killed),48.0%,13.8%,50.0%,42.5%
+2026-05-31 03:37:56,spotify,14491,Terminated via Direct UI Grid Button (8 process(es) killed),33.7%,16.6%,46.8%,44.1%
