@@ -1,4 +1,6 @@
 .idea
 .venv
 /data/logs.csv
-
+build/
+dist/
+main.spec
