@@ -2,3 +2,14 @@ Timestamp,App Name,PID,Action Taken,System CPU Before,System CPU After
 2026-05-28 08:04:37,brave,5606,Terminated,6.5%,4.0%
 2026-05-29 00:20:59,brave,5349,Lowered Priority (Linux Nice),23.3%,8.0%,43.8%,43.4%
 2026-05-29 00:21:36,brave,5349,Suspended (SIGSTOP),9.6%,9.0%,43.2%,43.1%
+2026-05-31 03:43:16,GitHubDesktop.exe,11128,Terminated via Direct UI Grid Button,12.8%,19.5%,92.8%,92.2%
+2026-05-31 03:44:26,brave.exe,20836,Terminated via Direct UI Grid Button,29.7%,32.8%,86.5%,86.6%
+2026-05-31 03:44:34,brave.exe,22200,Terminated via Direct UI Grid Button,14.4%,35.0%,86.6%,87.3%
+2026-05-31 03:44:45,brave.exe,23100,Terminated via Direct UI Grid Button,21.8%,13.7%,83.8%,72.9%
+2026-05-31 23:01:50,brave.exe,22128,Force Killed via UI Grid Button,30.8%,50.0%,92.2%,94.2%
+2026-05-31 23:02:28,brave.exe,21888,Force Killed via UI Grid Button,44.4%,29.6%,95.0%,94.6%
+2026-05-31 23:03:23,GitHubDesktop.exe,7392,Force Killed via UI Grid Button,13.3%,17.9%,96.4%,96.6%
+2026-05-31 23:09:42,brave.exe,8340,Force Killed via UI Grid Button,13.1%,15.9%,93.2%,92.1%
+2026-05-31 23:10:02,brave.exe,12016,Force Killed via UI Grid Button,13.2%,18.2%,90.8%,90.4%
+2026-05-31 23:10:33,ProtonVPN.Client.exe,19480,Force Killed via UI Grid Button,9.4%,12.8%,89.6%,86.8%
+2026-05-31 23:16:16,brave.exe,14840,Force Killed via Dashboard UI,11.2%,55.4%,79.5%,84.7%
