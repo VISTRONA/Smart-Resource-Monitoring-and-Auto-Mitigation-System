@@ -51,9 +51,9 @@ On Linux, it falls back to maximizing the process's nice value, de-prioritizing 
 
 ## 📸 Screenshots
 ### Live Dashboard
-![Dashboard](https://github.com/VISTRONA/Smart-Resource-Monitoring-and-Auto-Mitigation-System/blob/main/public/screenshots/dashboard.png)
+![Dashboard](public/screenshots/dashboard.png)
 ### History Dashboard
-![History](https://github.com/VISTRONA/Smart-Resource-Monitoring-and-Auto-Mitigation-System/blob/main/public/screenshots/optimization.png)
+![History](public/screenshots/optimization.png)
 
 ## 👨‍💻 Development Team
 This project was engineered and developed by:
