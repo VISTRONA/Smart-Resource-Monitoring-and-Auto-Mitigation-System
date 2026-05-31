@@ -7,6 +7,7 @@ from datetime import datetime
 
 from tkinter import *
 from tkinter import messagebox
+from tkinter import ttk  # Added for the History Data Table
 
 # Thresholds
 CpuThres = 10.0  
@@ -45,7 +46,6 @@ def system_scanner():
         status_label.config(text="HIGH RESOURCE USAGE DETECTED!", fg="#e74c3c")
         process_text.config(text="Identified high-resource processes. Act directly on targets below:")
 
-    # 1. GROUP PROCESSES BY NAME TO AVOID CLUTTER (Process Trees)
     current_apps = {}
     
     for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
@@ -55,7 +55,6 @@ def system_scanner():
             cpu_val = proc.info['cpu_percent'] or 0.0
             ram_val = proc.info['memory_percent'] or 0.0
 
-            # Skip core operating system processes to avoid crashes
             if name in ["System", "Idle", "System Idle Process", "Registry", "init", "taskhostw.exe", "explorer.exe"] or pid == os.getpid():
                 continue
 
@@ -67,7 +66,6 @@ def system_scanner():
                     "ram": 0.0
                 }
 
-            # Aggregate process tree data
             current_apps[name]["pids"].append(pid)
             current_apps[name]["cpu"] += cpu_val
             current_apps[name]["ram"] += ram_val
@@ -75,7 +73,6 @@ def system_scanner():
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue
 
-    # 2. CATEGORIZE GROUPS INTO HEAVY OR IDLE
     heavy_apps = {}
     idle_apps = {}
 
@@ -83,15 +80,11 @@ def system_scanner():
         data["cpu"] = round(data["cpu"], 1)
         data["ram"] = round(data["ram"], 1)
 
-        # CONDITION 1: Heavy Processes (Using noticeable CPU or heavy RAM)
         if data["cpu"] > 1.5 or data["ram"] > 2.0:
             heavy_apps[name] = data
-
-        # CONDITION 2: Idle Processes (Aggregated CPU is basically 0, but holding RAM)
         elif data["cpu"] <= 0.1 and data["ram"] > 0.5:
             idle_apps[name] = data
 
-    # 3. SMART UI UPDATE (Prevents jumping/flickering)
     update_ui_pane(scrollable_frame, active_heavy_widgets, heavy_apps, is_idle_pane=False)
     update_ui_pane(idle_scrollable_frame, active_idle_widgets, idle_apps, is_idle_pane=True)
 
@@ -102,14 +95,11 @@ def system_scanner():
 
 
 def update_ui_pane(target_frame, widget_dict, app_dict, is_idle_pane):
-    """Updates rows in-place instead of destroying the whole list to prevent scroll-jumping."""
-    # 1. Remove dead applications that are no longer running/heavy
     for name in list(widget_dict.keys()):
         if name not in app_dict:
             widget_dict[name]["frame"].destroy()
             del widget_dict[name]
 
-    # 2. Add new apps or update existing ones
     for name, app in app_dict.items():
         process_count_str = f"({len(app['pids'])} procs)"
         
@@ -118,14 +108,11 @@ def update_ui_pane(target_frame, widget_dict, app_dict, is_idle_pane):
         else:
             display_str = f"{name[:12]:<12} {process_count_str:<10} | C:{app['cpu']}% R:{app['ram']}%"
 
-        # If it already exists on screen, just update the text and button command
         if name in widget_dict:
             widget_dict[name]["label"].config(text=display_str)
-            # Rebind command to pass the updated PID list
             action = "Trim" if is_idle_pane else "Purge"
             widget_dict[name]["btn"].config(command=lambda a=app, act=action: implement_mitigation(a, act))
         else:
-            # Create a brand new row
             row_frame = Frame(target_frame, bg="#0f0f0f", bd=1, relief="flat")
             row_frame.pack(fill="x", padx=5, pady=4)
             
@@ -138,15 +125,12 @@ def update_ui_pane(target_frame, widget_dict, app_dict, is_idle_pane):
                 btn = Button(row_frame, text="KILL", font=("Arial", 7, "bold"), bg="#e74c3c", fg="white", bd=0, padx=5, pady=2, command=lambda a=app: implement_mitigation(a, "Purge"))
             
             btn.pack(side="right", padx=2)
-            
-            # Store in dictionary so we can update it next loop
             widget_dict[name] = {"frame": row_frame, "label": lbl, "btn": btn}
 
 
 def implement_mitigation(app_group, action_type): 
-    """Handles operational mitigation on the ENTIRE process tree."""
     global heartbeat_paused
-    heartbeat_paused = True # Freeze background scanning so UI doesn't shift
+    heartbeat_paused = True
 
     confirm = messagebox.askyesno(
         "Confirm Mitigation Strategy", 
@@ -163,12 +147,10 @@ def implement_mitigation(app_group, action_type):
     for pid in app_group['pids']:
         try:
             proc = psutil.Process(pid)
-            
             if action_type == "Purge":
                 proc.terminate()
                 success_count += 1
                 action_string = "Terminated Entire Process Tree"
-                
             elif action_type == "Trim":
                 if sys.platform == "win32":
                     import ctypes
@@ -180,14 +162,12 @@ def implement_mitigation(app_group, action_type):
                     proc.nice(19)
                 success_count += 1
                 action_string = "Idle Working Set Swapped / Trimmed"
-
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue
 
     if success_count > 0:
         status_label.config(text="MEASURING POST-ACTION RESOURCE IMPROVEMENTS...", fg="#e67e22")
         window.update()
-        # Wait 1.5 seconds, then calculate stats async
         window.after(1500, lambda: finalize_mitigation_stats(app_group, action_type, action_string, saved_cpu, saved_ram, success_count))
     else:
         messagebox.showerror("Error", "Access Denied or Processes vanished unexpectedly.")
@@ -195,7 +175,6 @@ def implement_mitigation(app_group, action_type):
 
 
 def finalize_mitigation_stats(app_group, action_type, action_string, old_cpu, old_ram, success_count):
-    """Calculates freed resources completely in the background, then alerts the user."""
     global heartbeat_paused
     new_cpu = psutil.cpu_percent(interval=None)
     new_ram = psutil.virtual_memory().percent
@@ -218,17 +197,86 @@ def finalize_mitigation_stats(app_group, action_type, action_string, old_cpu, ol
     )
     messagebox.showinfo("Mitigation Success", success_msg)
     
-    # Unpause and Force UI scan immediately to refresh the lists
     heartbeat_paused = False
     system_scanner()
 
 
+# --- NEW: History Window UI ---
+def open_history_window():
+    """Opens a new window displaying past actions logged in the CSV file."""
+    history_win = Toplevel(window)
+    history_win.title("Optimization History Log")
+    history_win.geometry("900x450")
+    history_win.configure(bg="#141414")
+
+    lbl = Label(history_win, text="SYSTEM OPTIMIZATION HISTORY", font=("Arial", 12, "bold"), bg="#141414", fg="white")
+    lbl.pack(pady=10)
+
+    # Styling the Treeview to match the Dark Theme
+    style = ttk.Style()
+    style.theme_use("default")
+    style.configure("Treeview", background="#1c1c1c", foreground="white", rowheight=25, fieldbackground="#1c1c1c", borderwidth=0)
+    style.map("Treeview", background=[("selected", "#3498db")])
+    style.configure("Treeview.Heading", background="#222222", foreground="white", font=("Courier", 9, "bold"), relief="flat")
+
+    tree_frame = Frame(history_win, bg="#141414")
+    tree_frame.pack(fill="both", expand=True, padx=20, pady=10)
+
+    # Define columns based on what the user actually cares about
+    columns = ("Timestamp", "App Name", "Action Taken", "CPU Freed", "RAM Freed")
+    tree = ttk.Treeview(tree_frame, columns=columns, show="headings", selectmode="none")
+
+    # Format column headers
+    tree.heading("Timestamp", text="TIME")
+    tree.column("Timestamp", width=150, anchor="center")
+    
+    tree.heading("App Name", text="APPLICATION")
+    tree.column("App Name", width=150, anchor="w")
+    
+    tree.heading("Action Taken", text="ACTION")
+    tree.column("Action Taken", width=250, anchor="w")
+    
+    tree.heading("CPU Freed", text="CPU FREED")
+    tree.column("CPU Freed", width=100, anchor="center")
+    
+    tree.heading("RAM Freed", text="RAM FREED")
+    tree.column("RAM Freed", width=100, anchor="center")
+
+    # Add a scrollbar to the table
+    scrollbar = Scrollbar(tree_frame, orient="vertical", command=tree.yview)
+    tree.configure(yscrollcommand=scrollbar.set)
+    scrollbar.pack(side="right", fill="y")
+    tree.pack(side="left", fill="both", expand=True)
+
+    # Read the CSV and populate the table
+    try:
+        with open(LogFiles, mode='r') as file:
+            reader = csv.reader(file)
+            next(reader, None)  # Skip header row
+            
+            records = list(reader)
+            # Reverse list so newest entries show at the top
+            for row in reversed(records):
+                if len(row) >= 8:
+                    try:
+                        # Safely parse old and new usage to calculate exactly what was freed
+                        old_cpu, new_cpu = float(row[4].replace('%', '')), float(row[5].replace('%', ''))
+                        old_ram, new_ram = float(row[6].replace('%', '')), float(row[7].replace('%', ''))
+                        
+                        freed_cpu = f"{max(0.0, round(old_cpu - new_cpu, 1))}%"
+                        freed_ram = f"{max(0.0, round(old_ram - new_ram, 1))}%"
+                    except ValueError:
+                        freed_cpu, freed_ram = "N/A", "N/A"
+
+                    tree.insert("", "end", values=(row[0], row[1], row[3], freed_cpu, freed_ram))
+    except FileNotFoundError:
+        tree.insert("", "end", values=("No logs found", "-", "-", "-", "-"))
+
+
 def continuous_loop():
     global saved_cpu, saved_ram
-    # Only scan if a prompt isn't currently open blocking the user
     if not heartbeat_paused:
         saved_cpu, saved_ram = system_scanner()
-        
     window.after(5000, continuous_loop)
 
 
@@ -240,7 +288,7 @@ if __name__ == "__main__":
 
     window = Tk()
     window.title("Smart Resource Monitor and Auto-Mitigation System")
-    window.geometry("1000x650") 
+    window.geometry("1000x700") 
     window.configure(bg="#141414")
 
     tit = Label(window, text="Smart Resource Monitor and Auto-Mitigation System", font=("Arial", 14, "bold"), bg="#141414", fg="white")
@@ -301,8 +349,15 @@ if __name__ == "__main__":
     idle_scrollbar.pack(side="right", fill="y")
     # -------------------------------------------------------------------
 
-    btn_exit = Button(window, text="DISCONNECT SYSTEM(EXIT)", font=("Arial", 11, "bold"), bg="#222222", fg="#aaaaaa", height=2, command=window.destroy)
-    btn_exit.pack(fill="x", padx=20, pady=15)
+    # Controls at the bottom
+    bottom_controls = Frame(window, bg="#141414")
+    bottom_controls.pack(fill="x", padx=20, pady=10)
+
+    btn_history = Button(bottom_controls, text="VIEW OPTIMIZATION HISTORY", font=("Arial", 10, "bold"), bg="#8e44ad", fg="white", height=2, command=open_history_window)
+    btn_history.pack(side="left", fill="x", expand=True, padx=(0, 5))
+
+    btn_exit = Button(bottom_controls, text="DISCONNECT SYSTEM", font=("Arial", 10, "bold"), bg="#222222", fg="#aaaaaa", height=2, command=window.destroy)
+    btn_exit.pack(side="right", fill="x", expand=True, padx=(5, 0))
 
     window.after(1000, continuous_loop)
     window.mainloop()
