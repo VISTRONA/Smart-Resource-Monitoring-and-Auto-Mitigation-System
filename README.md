@@ -4,6 +4,8 @@ A lightweight, high-performance telemetry dashboard and auto-mitigation utility 
 
 Built with a clean, dark-themed interface, this tool goes beyond basic task management by automatically categorizing processes into **Active Loads** and **Idle Background Tasks**, allowing users to apply targeted mitigation strategies like process purging or memory trimming without destabilizing the system.
 
+
+---
 ## 🚀 Features
 
 * **Real-Time Telemetry:** Continuous monitoring of system-wide CPU and RAM utilization.
@@ -16,6 +18,8 @@ Built with a clean, dark-themed interface, this tool goes beyond basic task mana
 * **Optimization History & Logging:** All actions are logged to a local CSV, complete with timestamps, target PIDs, and exactly how much CPU/RAM was reclaimed. Viewable directly through the built-in History Dashboard.
 * **Cross-Platform Compatibility:** Native support for Windows memory management APIs (`ctypes.windll.kernel32`) and Unix-based process prioritization.
 
+
+---
 ## 📥 Installation & Usage
 
 *(Note: Pre-compiled executable files for Windows and Linux are coming soon to the [Releases](#) page. You won't need Python installed to run them!)*
@@ -39,6 +43,7 @@ Ensure you have Python 3.x installed, then install the required psutil library.
     python main.py
     ```
 
+---
 ## ⚙️ How It Works (Under the Hood)
 The monitor establishes a continuous heartbeat loop, fetching hardware metrics via psutil.
 To ensure system stability, core OS processes (like System, Registry, explorer.exe, init) and
@@ -49,12 +54,19 @@ handle via the kernel32 API and forces the OS to page out the application's
 unneeded memory pages (SetProcessWorkingSetSize), instantly reducing its physical RAM footprint.
 On Linux, it falls back to maximizing the process's nice value, de-prioritizing it on the CPU scheduler.
 
+---
 ## 📸 Screenshots
 ### Live Dashboard
-![Dashboard](public/screenshots/dashboard.png)
-### History Dashboard
-![History](public/screenshots/optimization.png)
+<picture>
+  <img alt="Dashboard View" src="./public/screenshots/dashboard.png" width="100%">
+</picture>
 
+### History Dashboard
+<picture>
+  <img alt="History View" src="./public/screenshots/optimization_2.png" width="100%">
+</picture>
+
+---
 ## 👨‍💻 Development Team
 This project was engineered and developed by:
 1. [VISTRONA](https://github.com/VISTRONA) 
