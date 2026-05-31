@@ -13,3 +13,5 @@ Timestamp,App Name,PID,Action Taken,System CPU Before,System CPU After
 2026-05-31 03:36:17,steam,11388,Terminated via Direct UI Grid Button (19 process(es) killed),45.9%,10.9%,53.7%,43.1%
 2026-05-31 03:36:42,steam,13158,Terminated via Direct UI Grid Button (16 process(es) killed),48.0%,13.8%,50.0%,42.5%
 2026-05-31 03:37:56,spotify,14491,Terminated via Direct UI Grid Button (8 process(es) killed),33.7%,16.6%,46.8%,44.1%
+2026-05-31 23:45:08,spotify,"[95724, 95728, 95734, 95735, 95772, 95774, 95785, 95823, 95863]",Terminated Entire Process Tree,22.0%,19.2%,46.1%,42.7%
+2026-05-31 23:45:19,spotify,"[96028, 96032, 96036, 96037, 96064, 96066, 96077, 96114, 96150]",Terminated Entire Process Tree,22.0%,18.7%,46.1%,43.0%
