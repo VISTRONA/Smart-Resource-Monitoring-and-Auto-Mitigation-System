@@ -70,7 +70,7 @@ On Linux, it falls back to maximizing the process's nice value, de-prioritizing 
 ## 👨‍💻 Development Team
 This project was engineered and developed by:
 1. [VISTRONA](https://github.com/VISTRONA) 
-2. [ars120407-commits](https://github.com/ars120407-commits)
+2. [Aresious007](https://github.com/Aresious007)
 
 ## 🛡️ License
 
