@@ -21,7 +21,9 @@ active_idle_widgets = {}
 
 # System Flags
 heartbeat_paused = False
-
+def printer():
+    print("System OK")
+    
 
 def log_data(): 
     if not os.path.exists("data"):
